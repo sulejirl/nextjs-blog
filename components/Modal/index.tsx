@@ -17,21 +17,20 @@ const style = {
 
 interface IModal {
   buttonText: string;
-  children?: React.ReactNode;
+  children?: any;
 }
 
 export default function BasicModal({ buttonText = "Open Modal", children }:IModal) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const Component:any = children || <></>;
 
   return (
     <>
       <Button onClick={handleOpen}>{buttonText}</Button>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
-          <Component/>
+          {children}
         </Box>
       </Modal>
     </>
