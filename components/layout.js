@@ -35,7 +35,9 @@ export default function Layout({ children, home }) {
         {user ? (
           <ProfileMenu displayName={displayName} photoURL={photoURL} />
         ) : (
-          <Modal buttonText="Sign In" children={Firebase} />
+          <Modal buttonText="Sign In">
+            <Firebase/>
+          </Modal>
         )}
       </header>
       <Divider />

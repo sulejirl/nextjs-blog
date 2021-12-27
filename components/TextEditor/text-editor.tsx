@@ -56,6 +56,7 @@ import React, {
       return () => {
         window.removeEventListener("click", onWindowClick);
       };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
   
     const onWindowClick = () =>
