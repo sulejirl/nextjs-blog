@@ -20,7 +20,6 @@ const GetPost = gql`
 export default function Post() {
   const router = useRouter()
   const { id } = router.query;
-  console.log(id)
   const { data, loading, error } = useQuery(GetPost,{variables: {id: id}})
   if(loading) return <p>Loading...</p>
   if(error) return <p>Error...</p>

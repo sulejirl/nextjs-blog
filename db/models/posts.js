@@ -17,7 +17,7 @@ const PostSchema = new Schema({
   },
 },{timestamps:true})
 
-PostSchema.index({ name: 'text' })
+PostSchema.index({ title: 'text' })
 
 module.exports =
   mongoose.models.Post || mongoose.model('Post', PostSchema)
