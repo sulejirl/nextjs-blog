@@ -1,203 +1,178 @@
-import React, {
-    ReactElement,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-  } from "react";
-  import { EditorState } from "draft-js";
-  import Editor, {
-    createEditorStateWithText,
-    composeDecorators,
-  } from "@draft-js-plugins/editor";
-  import createInlineToolbarPlugin, {
-    Separator,
-  } from "@draft-js-plugins/inline-toolbar";
-  import createSideToolbarPlugin from "@draft-js-plugins/side-toolbar";
-  
-  import createImagePlugin from "@draft-js-plugins/image";
-  import createAlignmentPlugin from "@draft-js-plugins/alignment";
-  import createFocusPlugin from "@draft-js-plugins/focus";
-  import createResizeablePlugin from "@draft-js-plugins/resizeable";
-  import createBlockDndPlugin from "@draft-js-plugins/drag-n-drop";
-  
-  import editorStyles from "./editor.module.css";
-  import buttonStyles from "./buttonStyles.module.css";
-  
-  import ImageAdd from "./components/image-add";
-  import {
-    ItalicButton,
-    BoldButton,
-    UnderlineButton,
-    CodeButton,
-    HeadlineOneButton,
-    HeadlineTwoButton,
-    HeadlineThreeButton,
-    UnorderedListButton,
-    OrderedListButton,
-    BlockquoteButton,
-    CodeBlockButton,
-  } from "@draft-js-plugins/buttons";
-  
-  import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
-  import "@draft-js-plugins/side-toolbar/lib/plugin.css";
-  import "@draft-js-plugins/focus/lib/plugin.css";
-  import "@draft-js-plugins/image/lib/plugin.css";
-  import "@draft-js-plugins/alignment/lib/plugin.css";
-  
-  const text =
-    "In this editor a toolbar shows up once you select part of the text …";
-  const HeadlinesPicker = (props: any) => {
-    useEffect(() => {
-      setTimeout(() => {
-        window.addEventListener("click", onWindowClick);
-      });
-      window.removeEventListener("click", onWindowClick);
-      return () => {
-        window.removeEventListener("click", onWindowClick);
-      };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-  
-    const onWindowClick = () =>
-      // Call `onOverrideContent` again with `undefined`
-      // so the toolbar can show its regular content again.
-      props.onOverrideContent(undefined);
-  
-    const buttons = [HeadlineOneButton, HeadlineTwoButton, HeadlineThreeButton];
-    return (
-      <div>
-        {buttons.map((Button, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <Button key={i} {...props} />
-        ))}
-      </div>
-    );
-  };
-  
-  const HeadlinesButton = (props: any) => {
-    // When using a click event inside overridden content, mouse down
-    // events needs to be prevented so the focus stays in the editor
-    // and the toolbar remains visible  onMouseDown = (event) => event.preventDefault()
-    const onMouseDown = (event: any) => event.preventDefault();
-  
-    const onClick = () => props.onOverrideContent(HeadlinesPicker);
-  
-    return (
-      <div
-        onMouseDown={onMouseDown}
-        className={editorStyles.headlineButtonWrapper}
-      >
-        <button onClick={onClick} className={editorStyles.headlineButton}>
-          H
-        </button>
-      </div>
-    );
-  };
-  
-  const SimpleInlineToolbarEditor = (): ReactElement => {
-    const [plugins, InlineToolbar, SideToolbar, AlignmentTool, addImage] =
-      useMemo(() => {
-        const inlineToolbarPlugin = createInlineToolbarPlugin();
-        const sideToolbarPlugin = createSideToolbarPlugin();
-        const focusPlugin = createFocusPlugin();
-        const resizeablePlugin = createResizeablePlugin();
-        const blockDndPlugin = createBlockDndPlugin();
-        const alignmentPlugin = createAlignmentPlugin();
-  
-        const decorator = composeDecorators(
-          resizeablePlugin.decorator,
-          alignmentPlugin.decorator,
-          focusPlugin.decorator
-        );
-        const imagePlugin = createImagePlugin({ decorator });
-        return [
-          [
-            inlineToolbarPlugin,
-            sideToolbarPlugin,
-            blockDndPlugin,
-            focusPlugin,
-            alignmentPlugin,
-            resizeablePlugin,
-            imagePlugin,
-          ],
-          inlineToolbarPlugin.InlineToolbar,
-          sideToolbarPlugin.SideToolbar,
-          alignmentPlugin.AlignmentTool,
-          imagePlugin.addImage,
-        ];
-      }, []);
-  
-    const [editorState, setEditorState] = useState(() =>
-      createEditorStateWithText("")
-    );
-  
-    useEffect(() => {
-      // fixing issue with SSR https://github.com/facebook/draft-js/issues/2332#issuecomment-761573306
-      setEditorState(createEditorStateWithText(text));
-    }, []);
-  
-    const editor = useRef<Editor | null>(null);
-  
-    const onChange = (value: EditorState): void => {
-      setEditorState(value);
-    };
-  
-    const focus = (): void => {
-      editor.current?.focus();
-    };
-    return (
-      <React.Fragment>
-        <ImageAdd
-          editorState={editorState}
-          onChange={onChange}
-          modifier={addImage}
-        />
-        <div className={editorStyles.editor} onClick={focus}>
-          <Editor
-            editorKey="editor"
-            editorState={editorState}
-            onChange={onChange}
-            plugins={plugins}
-            ref={(element) => {
-              editor.current = element;
-            }}
-          />
-          <AlignmentTool />
-          <InlineToolbar>
-            {
-              // may be use React.Fragment instead of div to improve perfomance after React 16
-              (externalProps) => (
-                <React.Fragment>
-                  <BoldButton {...externalProps} />
-                  <ItalicButton {...externalProps} />
-                  <UnderlineButton {...externalProps} />
-                  <Separator/>
-                  <HeadlinesButton {...externalProps} />
-                  <UnorderedListButton {...externalProps} />
-                  <OrderedListButton {...externalProps} />
-                </React.Fragment>
-              )
-            }
-          </InlineToolbar>
-          <SideToolbar>
-          {
-            // may be use React.Fragment instead of div to improve perfomance after React 16
-            (externalProps) => (
-              <React.Fragment>
-                <ImageAdd
-                  editorState={editorState}
-                  onChange={onChange}
-                  modifier={addImage}
-                />
-              </React.Fragment>
-            )
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { Slate, Editable, ReactEditor, withReact, useSlate } from "slate-react";
+import {
+  Editor,
+  Transforms,
+  Text,
+  createEditor,
+  Element,
+  BaseEditor,
+  Descendant,
+  Range,
+} from "slate";
+import { css } from "@emotion/css";
+import { withHistory } from "slate-history";
+import {
+  FormatBold,
+  FormatItalic,
+  FormatUnderlined,
+} from "@mui/icons-material";
+
+import { Button, Icon, Menu, Portal } from "./components";
+
+type CustomElement = { type: "paragraph"; children: CustomText[] };
+type CustomText = { text: string };
+
+declare module "slate" {
+  interface CustomTypes {
+    Editor: BaseEditor & ReactEditor;
+    Element: CustomElement;
+    Text: CustomText;
+  }
+}
+
+const HoveringMenuExample = () => {
+  const initialValue: CustomElement[] = [
+    {
+      type: "paragraph",
+      children: [{ text: "A line of text in a paragraph." }],
+    },
+  ];
+  const [value, setValue] = useState<Descendant[]>(initialValue);
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+  return (
+    <Slate editor={editor} value={value} onChange={(value) => setValue(value)}>
+      <HoveringToolbar />
+      <Editable
+        renderLeaf={(props) => <Leaf {...props} />}
+        placeholder="Enter some text..."
+        onDOMBeforeInput={(event: InputEvent) => {
+          console.log(event);
+          switch (event.inputType) {
+            case "formatBold":
+              return toggleFormat(editor, "bold");
+            case "formatItalic":
+              return toggleFormat(editor, "italic");
+            case "formatUnderline":
+              return toggleFormat(editor, "underlined");
           }
-        </SideToolbar>
-        </div>
-      </React.Fragment>
-    );
-  };
-  
-  export default SimpleInlineToolbarEditor;
-  
+        }}
+      />
+    </Slate>
+  );
+};
+
+const toggleFormat = (editor, format) => {
+  const isActive = isFormatActive(editor, format);
+  Transforms.setNodes(
+    editor,
+    { [format]: isActive ? null : true },
+    { match: Text.isText, split: true }
+  );
+};
+
+const isFormatActive = (editor, format) => {
+  const [match]: any = Editor.nodes(editor, {
+    match: (n) => n[format] === true,
+    mode: "all",
+  });
+  return !!match;
+};
+
+const Leaf = ({ attributes, children, leaf }) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
+  }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+
+  if (leaf.underlined) {
+    children = <u>{children}</u>;
+  }
+
+  return <span {...attributes}>{children}</span>;
+};
+
+const HoveringToolbar = () => {
+  const ref = useRef<HTMLDivElement | null>();
+  const editor = useSlate();
+
+  useEffect(() => {
+    const el = ref.current;
+    const { selection } = editor;
+
+    if (!el) {
+      return;
+    }
+
+    if (
+      !selection ||
+      !ReactEditor.isFocused(editor as ReactEditor) ||
+      Range.isCollapsed(selection) ||
+      Editor.string(editor, selection) === ""
+    ) {
+      el.removeAttribute("style");
+      return;
+    }
+
+    const domSelection = window.getSelection();
+    const domRange = domSelection.getRangeAt(0);
+    const rect = domRange.getBoundingClientRect();
+    el.style.opacity = "1";
+    el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`;
+    el.style.left = `${
+      rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2
+    }px`;
+  });
+
+  return (
+    <Portal>
+      <Menu
+        ref={ref}
+        className={css`
+          padding: 8px 7px 6px;
+          position: absolute;
+          z-index: 1;
+          top: -10000px;
+          left: -10000px;
+          margin-top: -6px;
+          opacity: 0;
+          background-color: #222;
+          border-radius: 4px;
+          transition: opacity 0.75s;
+        `}
+      >
+        <FormatButton format="bold">
+          <FormatBold />
+        </FormatButton>
+        <FormatButton format="italic">
+          <FormatItalic />
+        </FormatButton>
+        <FormatButton format="underlined">
+          <FormatUnderlined />
+        </FormatButton>
+      </Menu>
+    </Portal>
+  );
+};
+
+const FormatButton = ({ format, children }) => {
+  const editor = useSlate();
+  return (
+    <Button
+      reversed
+      active={isFormatActive(editor, format)}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleFormat(editor, format);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
+
+export default HoveringMenuExample;

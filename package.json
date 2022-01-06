@@ -16,6 +16,7 @@
     "@draft-js-plugins/inline-toolbar": "^4.1.2",
     "@draft-js-plugins/resizeable": "^5.0.2",
     "@draft-js-plugins/side-toolbar": "^5.0.0",
+    "@emotion/css": "^11.7.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.5",
@@ -35,7 +36,9 @@
     "react-dom": "17.0.2",
     "react-firebaseui": "^6.0.0",
     "remark": "^14.0.2",
-    "remark-html": "^15.0.1"
+    "remark-html": "^15.0.1",
+    "slate-history": "^0.66.0",
+    "slate-react": "^0.72.1"
   },
   "devDependencies": {
     "@types/draft-js": "^0.11.8",

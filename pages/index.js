@@ -6,6 +6,7 @@ import Date from "../components/date";
 import Firebase from "../components/FirebaseAuth";
 import Modal from "../components/Modal";
 import ProfileMenu from "../components/ProfileMenu";
+import { Backdrop } from '@mui/material';
 
 import { useAuth } from "../contexts/firebaseContext";
 
@@ -27,13 +28,12 @@ const GetPosts = gql`
 export default function Home() {
   const { data, loading, error } = useQuery(GetPosts)
   const { user } = useAuth();
-  const displayName = user?.multiFactor?.user?.displayName || "";
-  const photoURL = user?.multiFactor?.user?.photoURL || "";
-  if(loading) return <p>Loading...</p>
+  if(loading) return <Backdrop/>
   return (
     <Layout home>
       <Head>
         <title>{siteTitle}</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
       </Head>
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
 

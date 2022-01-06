@@ -4,6 +4,7 @@ import Head from 'next/head'
 import utilStyles from '../../styles/utils.module.css'
 import { gql, useQuery } from "@apollo/client";
 import { useRouter } from 'next/router'
+import { Backdrop } from '@mui/material';
 
 
 const GetPost = gql`
@@ -21,7 +22,7 @@ export default function Post() {
   const router = useRouter()
   const { id } = router.query;
   const { data, loading, error } = useQuery(GetPost,{variables: {id: id}})
-  if(loading) return <p>Loading...</p>
+  if(loading) return <Backdrop/>
   if(error) return <p>Error...</p>
     return (
       <Layout>

@@ -1,10 +1,10 @@
 import Head from "next/head";
 import Layout, { siteTitle } from "../../components/layout";
 import TextEditor from "../../components/TextEditor/text-editor";
-
+import { Backdrop } from '@mui/material';
 
 export default function NewPost() {
-  if(false) return <p>Loading...</p>
+  if(false) return <Backdrop/>
   return (
     <Layout home>
       <Head>

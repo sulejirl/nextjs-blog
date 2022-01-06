@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Menu, MenuItem, Button, Avatar, IconButton } from "@mui/material";
 import { useAuth } from "../../contexts/firebaseContext";
+import { useRouter } from 'next/router'
+
 
 interface IProfileMenu {
   displayName: string;
@@ -8,6 +10,7 @@ interface IProfileMenu {
 }
 
 export default function BasicMenu({ displayName, photoURL }: IProfileMenu) {
+  const router = useRouter()
   const {signOut} = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -33,7 +36,7 @@ export default function BasicMenu({ displayName, photoURL }: IProfileMenu) {
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={()=>{}}>New Report</MenuItem>
+        <MenuItem onClick={()=>{router.push('posts/new')}}>New Report</MenuItem>
         <MenuItem onClick={()=>{}}>Profile</MenuItem>
         <MenuItem onClick={handleClose}>My account</MenuItem>
         <MenuItem onClick={signOut}>Logout</MenuItem>
