@@ -1,11 +1,10 @@
-import Layout from '../../components/layout'
-import Date from '../../components/date'
-import Head from 'next/head'
-import utilStyles from '../../styles/utils.module.css'
+import Layout from "../../components/layout";
+import Date from "../../components/date";
+import Head from "next/head";
+import utilStyles from "../../styles/utils.module.css";
 import { gql, useQuery } from "@apollo/client";
-import { useRouter } from 'next/router'
-import { Backdrop } from '@mui/material';
-
+import { useRouter } from "next/router";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const GetPost = gql`
   query getPost($id: ID!) {
@@ -19,24 +18,33 @@ const GetPost = gql`
 `;
 
 export default function Post() {
-  const router = useRouter()
+  const router = useRouter();
   const { id } = router.query;
-  const { data, loading, error } = useQuery(GetPost,{variables: {id: id}})
-  if(loading) return <Backdrop/>
-  if(error) return <p>Error...</p>
+  const { data, loading, error } = useQuery(GetPost, { variables: { id: id } });
+  if (loading) {
     return (
-      <Layout>
-        <Head>
-          <title>{data.getPost.title}</title>
-        </Head>
-        <article>
-          <h1 className={utilStyles.headingXl}>{data.getPost.title}</h1>
-          <div className={utilStyles.lightText}>
-            <Date dateString={data.getPost.createdAt} />
-          </div>
-          <div dangerouslySetInnerHTML={{ __html: data.getPost.body }} />
-        </article>
-      </Layout>
-    )
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={true}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
+  }
 
+  if (error) return <p>Error...</p>;
+  return (
+    <Layout>
+      <Head>
+        <title>{data.getPost.title}</title>
+      </Head>
+      <article>
+        <h1 className={utilStyles.headingXl}>{data.getPost.title}</h1>
+        <div className={utilStyles.lightText}>
+          <Date dateString={data.getPost.createdAt} />
+        </div>
+        <div dangerouslySetInnerHTML={{ __html: data.getPost.body }} />
+      </article>
+    </Layout>
+  );
 }

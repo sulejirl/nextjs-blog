@@ -6,10 +6,9 @@ import Date from "../components/date";
 import Firebase from "../components/FirebaseAuth";
 import Modal from "../components/Modal";
 import ProfileMenu from "../components/ProfileMenu";
-import { Backdrop } from '@mui/material';
+import { Backdrop,CircularProgress } from "@mui/material";
 
 import { useAuth } from "../contexts/firebaseContext";
-
 
 import { gql, useQuery } from "@apollo/client";
 
@@ -24,19 +23,30 @@ const GetPosts = gql`
   }
 `;
 
-
 export default function Home() {
-  const { data, loading, error } = useQuery(GetPosts)
+  const { data, loading, error } = useQuery(GetPosts);
   const { user } = useAuth();
-  if(loading) return <Backdrop/>
+  if (loading) {
+    return (
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={true}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
+  }
+
   return (
     <Layout home>
       <Head>
         <title>{siteTitle}</title>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        ></link>
       </Head>
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
-
         <h2 className={utilStyles.headingLg}>Blog</h2>
         <ul className={utilStyles.list}>
           {data.getPosts.map(({ _id, createdAt, title }) => (
