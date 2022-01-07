@@ -229,22 +229,18 @@ const SideToolbar = () => {
 
   useEffect(() => {
     const { selection, children } = editor;
-    console.log(
-      selection &&
-        Range.isCollapsed(selection) &&
-        children[selection.anchor.path[0]]
-    );
+    const preChildren: any = selection && children[selection.anchor.path[0]];
     setShowSideToolbar(
       selection &&
         Range.isCollapsed(selection) &&
-        children[selection.anchor.path[0]].children[0].text.length === 0
+        preChildren.children[0].text.length === 0
     );
 
     if (typeof window.getSelection() !== "undefined") {
       const domSelection = window.getSelection();
       if (domSelection.rangeCount > 0) {
         const domRange = domSelection.getRangeAt(0);
-        const child = selection && children[selection.anchor.path[0]];
+        const child: any = selection && preChildren;
 
         const rect = domRange.getClientRects();
         if (child && rect.length > 0) {
