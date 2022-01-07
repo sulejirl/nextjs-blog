@@ -20,10 +20,6 @@ export default function NewPost() {
       <Head>
         <title>{siteTitle}</title>
       </Head>
-      <p>
-        (This is a sample website - you’ll be building a site like this on{" "}
-        <a href="https://nextjs.org/learn">our Next.js tutorial</a>.)
-      </p>
       <section>
         <TextEditor />
       </section>

@@ -8,12 +8,14 @@ import Modal from "./Modal";
 import ProfileMenu from "./ProfileMenu";
 import { useAuth } from "../contexts/firebaseContext";
 import { Divider, Typography } from "@mui/material";
+import { useRouter } from "next/router";
 
 const name = "Ahmet Sayarlioglu";
-export const siteTitle = "Next.js Sample Website";
+export const siteTitle = "Scoutsland";
 
 export default function Layout({ children, home }) {
   const { user } = useAuth();
+  const router = useRouter();
   const displayName = user?.multiFactor?.user?.displayName || "";
   const photoURL = user?.multiFactor?.user?.photoURL || "";
   return (
@@ -31,12 +33,18 @@ export default function Layout({ children, home }) {
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <header className={styles.header}>
-        <Typography variant="h4">Scoutsland</Typography>
+        <Typography
+          sx={{ cursor: "pointer" }}
+          variant="h4"
+          onClick={() => router.push("/")}
+        >
+          Scoutsland
+        </Typography>
         {user ? (
           <ProfileMenu displayName={displayName} photoURL={photoURL} />
         ) : (
           <Modal buttonText="Sign In">
-            <Firebase/>
+            <Firebase />
           </Modal>
         )}
       </header>
