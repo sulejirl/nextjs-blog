@@ -1,7 +1,7 @@
 import { Editor, Transforms, Text } from "slate";
 export const EditorCommands = {
   isBoldMarkActive(editor) {
-    const [match] = Editor.nodes(editor, {
+    const [match]: any = Editor.nodes(editor, {
       match: (n) => n.bold === true,
       universal: true,
     });
@@ -10,7 +10,7 @@ export const EditorCommands = {
   },
 
   isCodeBlockActive(editor) {
-    const [match] = Editor.nodes(editor, {
+    const [match]: any= Editor.nodes(editor, {
       match: (n) => n.type === "code",
     });
 
