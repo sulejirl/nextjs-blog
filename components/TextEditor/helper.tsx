@@ -21,7 +21,7 @@ export const EditorCommands = {
     const isActive = EditorCommands.isBoldMarkActive(editor);
     Transforms.setNodes(
       editor,
-      { bold: isActive ? null : true },
+      { bold: isActive ? null : true } as any,
       { match: (n) => Text.isText(n), split: true }
     );
   },
@@ -30,7 +30,7 @@ export const EditorCommands = {
     const isActive = EditorCommands.isCodeBlockActive(editor);
     Transforms.setNodes(
       editor,
-      { type: isActive ? null : "code" },
+      { type: isActive ? null : "code" } as any,
       { match: (n) => Editor.isBlock(editor, n) }
     );
   },
@@ -38,7 +38,7 @@ export const EditorCommands = {
     const isActive = EditorCommands.isCodeBlockActive(editor);
     Transforms.setNodes(
       editor,
-      { type: isActive ? null : "h1" },
+      { type: isActive ? null : "h1" } as any,
       { match: (n) => Editor.isBlock(editor, n) }
     );
   },
