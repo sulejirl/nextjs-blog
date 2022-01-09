@@ -55,6 +55,7 @@ import { EditorCommands } from "./helper";
 import useWindowSize from "../../hooks/useWindowSize";
 import useOnClickOutside from "../../hooks/useOnClickOutside";
 import ImageAdd from "./components/imageAdd";
+import ImageSettings from "./components/imageSettings";
 
 type CustomElement = { type: "paragraph"; children: CustomText[] };
 type CustomText = { text: string };
@@ -78,7 +79,9 @@ type ImageElement = {
 const Image = ({ attributes, children, element }) => {
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
-  console.log(element);
+  const [imageAnchor, setImageAnchor] = useState(null);
+  const [width, setWidth] = useState(200);
+  const [height, setHeight] = useState(200);
 
   const selected = useSelected();
   const focused = useFocused();
@@ -93,8 +96,11 @@ const Image = ({ attributes, children, element }) => {
       >
         <Img
           src={element.url}
-          width={element.width || 200}
-          height={element.height || 200}
+          width={width || 200}
+          height={height || 200}
+          onClick={(e) => {
+            setImageAnchor(e.currentTarget);
+          }}
           className={css`
             display: block;
             max-width: 100%;
@@ -102,17 +108,21 @@ const Image = ({ attributes, children, element }) => {
             box-shadow: ${selected && focused ? "0 0 0 3px #B4D5FF" : "none"};
           `}
         />
-        <IconButton
-          onClick={() => Transforms.removeNodes(editor, { at: path })}
-          className={css`
-            display: ${selected && focused ? "inline" : "none"};
-            position: absolute;
-            top: 0.5em;
-            left: 0.5em;
-          `}
-        >
-          <Delete />
-        </IconButton>
+        <ImageSettings
+          anchorEl={imageAnchor}
+          onSetSize={(width, height) => {
+            setWidth(width);
+            setHeight(height);
+            setImageAnchor(null);
+          }}
+          onClose={() => {
+            setImageAnchor(null);
+          }}
+          onDelete={() => {
+            setImageAnchor(null);
+            Transforms.removeNodes(editor, { at: path, voids: true });
+          }}
+        />
       </div>
     </div>
   );
@@ -130,7 +140,6 @@ const isImageUrl = (url) => {
   return imageExtensions.includes(ext);
 };
 const withImages = (editor) => {
-  console.log("withImages", editor);
   const { insertData, isVoid } = editor;
 
   editor.isVoid = (element) => {
@@ -236,33 +245,9 @@ const HoveringMenuExample = () => {
       >
         <HoveringToolbar />
         <SideToolbar onClickToolbar={() => setCursorActive(false)} />
-        {/* <div>
-          <button
-            onMouseDown={(event) => {
-              event.preventDefault();
-              EditorCommands.toggleBoldMark(editor);
-            }}
-          >
-            Bold
-          </button>
-          <button
-            onMouseDown={(event) => {
-              event.preventDefault();
-              EditorCommands.toggleCodeBlock(editor);
-            }}
-          >
-            Code Block
-          </button>
-          <button
-            onMouseDown={(event) => {
-              event.preventDefault();
-              EditorCommands.toggleH3(editor);
-            }}
-          >
-            H3
-          </button>
-        </div> */}
         <Editable
+        style={{minHeight: "100vh"}}
+
           renderLeaf={(props) => <Leaf {...props} />}
           renderElement={renderElement}
           placeholder="Enter some text..."
@@ -456,7 +441,6 @@ const HoveringToolbar = () => {
       el.removeAttribute("style");
       return;
     }
-
     const domSelection = window.getSelection();
     const domRange = domSelection.getRangeAt(0);
     const rect = domRange.getBoundingClientRect();
@@ -468,7 +452,6 @@ const HoveringToolbar = () => {
   });
 
   return (
-    <Portal>
       <Menu
         ref={ref}
         className={css`
@@ -494,7 +477,6 @@ const HoveringToolbar = () => {
           <FormatUnderlined />
         </FormatButton>
       </Menu>
-    </Portal>
   );
 };
 

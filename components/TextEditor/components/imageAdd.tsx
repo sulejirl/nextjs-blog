@@ -10,7 +10,7 @@ import {
 } from "@mui/material/";
 import { ImageOutlined } from "@mui/icons-material";
 
-export default function BasicPopover({ sx, editor,insertImage }: any) {
+export default function BasicPopover({ sx, editor, insertImage }: any) {
   const [imagePath, setImagePath] = useState("");
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
@@ -24,13 +24,12 @@ export default function BasicPopover({ sx, editor,insertImage }: any) {
     setAnchorEl(null);
   };
 
-
-
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
   const handleAddImage = () => {
-    insertImage(editor, imagePath)}
-
+    insertImage(editor, imagePath);
+    handleClose();
+  };
   return (
     <div>
       <IconButton sx={sx} aria-describedby={id} onClick={handleClick}>
@@ -47,9 +46,9 @@ export default function BasicPopover({ sx, editor,insertImage }: any) {
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography sx={{ p: 2 }}>Add Image Url</Typography>
           <Grid container alignContent={"center"}>
             <TextField
+              placeholder="Add Image Url"
               size="small"
               onChange={(e) => setImagePath(e.target.value)}
             />
