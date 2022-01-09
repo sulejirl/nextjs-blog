@@ -12,7 +12,10 @@ import {
   withReact,
   useSlate,
   useFocused,
+  useSlateStatic,
+  useSelected,
 } from "slate-react";
+import Img from "next/image";
 import {
   Editor,
   Transforms,
@@ -31,8 +34,13 @@ import {
   FormatItalic,
   FormatUnderlined,
   AddCircleOutlineOutlined,
+  CancelOutlined,
+  ImageOutlined,
+  Delete,
 } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import imageExtensions from "image-extensions";
+import isUrl from "is-url";
+import { IconButton, Popover } from "@mui/material";
 
 import {
   Button,
@@ -41,8 +49,12 @@ import {
   Portal,
   CodeElement,
   DefaultElement,
+  Button as ImgButton,
 } from "./components";
 import { EditorCommands } from "./helper";
+import useWindowSize from "../../hooks/useWindowSize";
+import useOnClickOutside from "../../hooks/useOnClickOutside";
+import ImageAdd from "./components/imageAdd";
 
 type CustomElement = { type: "paragraph"; children: CustomText[] };
 type CustomText = { text: string };
@@ -54,7 +66,104 @@ declare module "slate" {
     Text: CustomText;
   }
 }
+type EmptyText = {
+  text: string;
+};
 
+type ImageElement = {
+  type: "image";
+  url: string;
+  children: EmptyText[];
+};
+const Image = ({ attributes, children, element }) => {
+  const editor = useSlateStatic();
+  const path = ReactEditor.findPath(editor, element);
+  console.log(element);
+
+  const selected = useSelected();
+  const focused = useFocused();
+  return (
+    <div {...attributes}>
+      {children}
+      <div
+        contentEditable={false}
+        className={css`
+          position: relative;
+        `}
+      >
+        <Img
+          src={element.url}
+          width={element.width || 200}
+          height={element.height || 200}
+          className={css`
+            display: block;
+            max-width: 100%;
+            max-height: 20em;
+            box-shadow: ${selected && focused ? "0 0 0 3px #B4D5FF" : "none"};
+          `}
+        />
+        <IconButton
+          onClick={() => Transforms.removeNodes(editor, { at: path })}
+          className={css`
+            display: ${selected && focused ? "inline" : "none"};
+            position: absolute;
+            top: 0.5em;
+            left: 0.5em;
+          `}
+        >
+          <Delete />
+        </IconButton>
+      </div>
+    </div>
+  );
+};
+
+const insertImage = (editor, url) => {
+  const text = { text: "" };
+  const image: ImageElement = { type: "image", url, children: [text] };
+  Transforms.insertNodes(editor, image as any);
+};
+const isImageUrl = (url) => {
+  if (!url) return false;
+  if (!isUrl(url)) return false;
+  const ext = new URL(url).pathname.split(".").pop();
+  return imageExtensions.includes(ext);
+};
+const withImages = (editor) => {
+  console.log("withImages", editor);
+  const { insertData, isVoid } = editor;
+
+  editor.isVoid = (element) => {
+    return element.type === "image" ? true : isVoid(element);
+  };
+
+  editor.insertData = (data) => {
+    const text = data.getData("text/plain");
+    const { files } = data;
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const reader = new FileReader();
+        const [mime] = file.type.split("/");
+
+        if (mime === "image") {
+          reader.addEventListener("load", () => {
+            const url = reader.result;
+            insertImage(editor, url);
+          });
+
+          reader.readAsDataURL(file);
+        }
+      }
+    } else if (isImageUrl(text)) {
+      insertImage(editor, text);
+    } else {
+      insertData(data);
+    }
+  };
+
+  return editor;
+};
 const serialize = (value) => {
   return (
     value
@@ -76,6 +185,7 @@ const deserialize = (string) => {
   });
 };
 const HoveringMenuExample = () => {
+  const ref = useRef();
   const focused = useFocused();
   const initialValue: CustomElement[] = [
     {
@@ -88,10 +198,17 @@ const HoveringMenuExample = () => {
       deserialize(window.localStorage.getItem("content"))) ||
       initialValue
   );
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(
+    () => withImages(withHistory(withReact(createEditor()))),
+    []
+  );
+  const [cursorActive, setCursorActive] = useState(false);
+  useOnClickOutside(ref, () => setCursorActive(false));
 
   const renderElement = useCallback((props) => {
     switch (props.element.type) {
+      case "image":
+        return <Image {...props} />;
       case "code":
         return <CodeElement {...props} />;
       case "h1":
@@ -101,87 +218,92 @@ const HoveringMenuExample = () => {
     }
   }, []);
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(value) => {
-        setValue(value);
+    <div ref={ref}>
+      <Slate
+        editor={editor}
+        value={value || []}
+        onChange={(value) => {
+          setValue(value);
 
-        const isAstChange = editor.operations.some(
-          (op) => "set_selection" !== op.type
-        );
-        if (isAstChange) {
-          // Save the value to Local Storage.
-          localStorage.setItem("content", serialize(value));
-        }
-      }}
-    >
-      <HoveringToolbar />
-      <SideToolbar />
-      <div>
-        <button
-          onMouseDown={(event) => {
-            event.preventDefault();
-            EditorCommands.toggleBoldMark(editor);
-          }}
-        >
-          Bold
-        </button>
-        <button
-          onMouseDown={(event) => {
-            event.preventDefault();
-            EditorCommands.toggleCodeBlock(editor);
-          }}
-        >
-          Code Block
-        </button>
-        <button
-          onMouseDown={(event) => {
-            event.preventDefault();
-            EditorCommands.toggleH3(editor);
-          }}
-        >
-          H3
-        </button>
-      </div>
-      <Editable
-        renderLeaf={(props) => <Leaf {...props} />}
-        renderElement={renderElement}
-        placeholder="Enter some text..."
-        onKeyDown={(event) => {
-          if (!event.ctrlKey) {
-            return;
+          const isAstChange = editor.operations.some(
+            (op) => "set_selection" !== op.type
+          );
+          if (isAstChange) {
+            // Save the value to Local Storage.
+            localStorage.setItem("content", serialize(value));
           }
-
-          // Replace the `onKeyDown` logic with our new commands.
-          switch (event.key) {
-            case "`": {
-              event.preventDefault();
-              EditorCommands.toggleCodeBlock(editor);
-              break;
-            }
-
-            case "b": {
+        }}
+      >
+        <HoveringToolbar />
+        <SideToolbar onClickToolbar={() => setCursorActive(false)} />
+        {/* <div>
+          <button
+            onMouseDown={(event) => {
               event.preventDefault();
               EditorCommands.toggleBoldMark(editor);
-              break;
+            }}
+          >
+            Bold
+          </button>
+          <button
+            onMouseDown={(event) => {
+              event.preventDefault();
+              EditorCommands.toggleCodeBlock(editor);
+            }}
+          >
+            Code Block
+          </button>
+          <button
+            onMouseDown={(event) => {
+              event.preventDefault();
+              EditorCommands.toggleH3(editor);
+            }}
+          >
+            H3
+          </button>
+        </div> */}
+        <Editable
+          renderLeaf={(props) => <Leaf {...props} />}
+          renderElement={renderElement}
+          placeholder="Enter some text..."
+          onKeyDown={(event) => {
+            if (!event.ctrlKey) {
+              return;
             }
-          }
-        }}
-        onDOMBeforeInput={(event: InputEvent) => {
-          switch (event.inputType) {
-            case "formatBold":
-              return toggleFormat(editor, "bold");
-            case "formatItalic":
-              return toggleFormat(editor, "italic");
-            case "formatUnderline":
-              return toggleFormat(editor, "underlined");
-            case "formatH3":
-              return toggleFormat(editor, "h3");
-          }
-        }}
-      />
-    </Slate>
+
+            // Replace the `onKeyDown` logic with our new commands.
+            switch (event.key) {
+              case "`": {
+                event.preventDefault();
+                EditorCommands.toggleCodeBlock(editor);
+                break;
+              }
+
+              case "b": {
+                event.preventDefault();
+                EditorCommands.toggleBoldMark(editor);
+                break;
+              }
+            }
+          }}
+          onDOMBeforeInput={(event: InputEvent) => {
+            switch (event.inputType) {
+              case "formatBold":
+                return toggleFormat(editor, "bold");
+              case "formatItalic":
+                return toggleFormat(editor, "italic");
+              case "formatUnderline":
+                return toggleFormat(editor, "underlined");
+              case "formatH3":
+                return toggleFormat(editor, "h3");
+            }
+          }}
+          onClick={(event) => {
+            setCursorActive(true);
+          }}
+        />
+      </Slate>
+    </div>
   );
 };
 
@@ -218,15 +340,22 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>;
 };
 
-const SideToolbar = () => {
+const SideToolbar = ({ onClickToolbar }: any) => {
   const ref = useRef<HTMLDivElement | null>();
   const editor = useSlate();
+  const focused = useFocused();
   const [showSideToolbar, setShowSideToolbar] = useState(false);
   const [lineHeight, setLineHeight] = useState(0);
   const [top, setTop] = useState(0);
   const [bottom, setBottom] = useState(0);
   const [left, setLeft] = useState(0);
+  const [sideToolbar, setSideToolbar] = useState(false);
+  const windowSize = useWindowSize();
 
+  const toggleSideToolbar = () => {
+    onClickToolbar();
+    setSideToolbar(!sideToolbar);
+  };
   useEffect(() => {
     const { selection, children } = editor;
     const preChildren: any = selection && children[selection.anchor.path[0]];
@@ -235,7 +364,6 @@ const SideToolbar = () => {
         Range.isCollapsed(selection) &&
         preChildren.children[0].text.length === 0
     );
-
     if (typeof window.getSelection() !== "undefined") {
       const domSelection = window.getSelection();
       if (domSelection.rangeCount > 0) {
@@ -252,21 +380,56 @@ const SideToolbar = () => {
           setLineHeight(lineHeight);
         }
       }
-
-      // console.log(domSelection, domRange, rect);
+    }
+    if (sideToolbar && ReactEditor.isFocused(editor as ReactEditor)) {
+      setSideToolbar(false);
     }
   });
   if (showSideToolbar) {
     return (
-      <IconButton
-        sx={{
-          position: "absolute",
-          top: `${(bottom + top) / 2 - lineHeight}px`,
-          left: `${left - 60}px`,
-        }}
-      >
-        <AddCircleOutlineOutlined />
-      </IconButton>
+      <>
+        {sideToolbar ? (
+          <>
+            <IconButton
+              sx={{
+                position: "absolute",
+                top: `${(bottom + top) / 2 - lineHeight}px`,
+                left: `${left - 60}px`,
+              }}
+            >
+              <CancelOutlined
+                onClick={() => {
+                  toggleSideToolbar();
+                }}
+              />
+            </IconButton>
+            <ImageAdd
+              editor={editor}
+              sx={{
+                position: "absolute",
+                top: `${(bottom + top) / 2 - lineHeight}px`,
+                left: `${left - 10}px`,
+                zIndex: 999,
+              }}
+              insertImage={insertImage}
+            />
+          </>
+        ) : (
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: `${(bottom + top) / 2 - lineHeight}px`,
+              left: `${left - 60}px`,
+            }}
+          >
+            <AddCircleOutlineOutlined
+              onClick={() => {
+                toggleSideToolbar();
+              }}
+            />
+          </IconButton>
+        )}
+      </>
     );
   }
   return <></>;
@@ -274,6 +437,7 @@ const SideToolbar = () => {
 const HoveringToolbar = () => {
   const ref = useRef<HTMLDivElement | null>();
   const editor = useSlate();
+  const focused = useFocused();
 
   useEffect(() => {
     const el = ref.current;
