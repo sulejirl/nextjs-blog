@@ -1,7 +1,13 @@
 import React, { useState, useRef } from "react";
 import { Popover, TextField, Box, Button, Grid } from "@mui/material/";
 
-export default function BasicPopover({ anchorEl, onSetSize, onClose ,onDelete}: any) {
+export default function BasicPopover({
+  anchorEl,
+  onHandleAlignment,
+  onSetSize,
+  onClose,
+  onDelete,
+}: any) {
   const [imageHeight, setImageHeight] = useState(200);
   const [imageWidth, setImageWidth] = useState(200);
   const handleSetSize = () => {
@@ -23,6 +29,32 @@ export default function BasicPopover({ anchorEl, onSetSize, onClose ,onDelete}: 
         }}
       >
         <Box sx={{ p: 2 }}>
+          <Grid>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              onClick={() => onHandleAlignment("left")}
+            >
+              Left
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              onClick={() => onHandleAlignment("center")}
+            >
+              Center
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              onClick={() => onHandleAlignment("right")}
+            >
+              Right
+            </Button>
+          </Grid>
           <Grid container alignContent={"center"}>
             <TextField
               type={"number"}
@@ -38,6 +70,14 @@ export default function BasicPopover({ anchorEl, onSetSize, onClose ,onDelete}: 
               size="small"
               onChange={(e) => setImageHeight(Number(e.target.value))}
             />
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              onClick={handleSetSize}
+            >
+              Set Size
+            </Button>
           </Grid>
           <Button
             size="small"
@@ -46,14 +86,6 @@ export default function BasicPopover({ anchorEl, onSetSize, onClose ,onDelete}: 
             onClick={onDelete}
           >
             Delete Image
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            color="primary"
-            onClick={handleSetSize}
-          >
-            Set Size
           </Button>
         </Box>
       </Popover>
