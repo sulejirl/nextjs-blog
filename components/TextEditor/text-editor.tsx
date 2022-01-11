@@ -19,7 +19,13 @@ import useOnClickOutside from "../../hooks/useOnClickOutside";
 import { HoveringToolbar, SideToolbar, Leaf, Image } from "./components";
 
 type CustomElement = { type: "paragraph"; children: CustomText[] };
-type CustomText = { text: string };
+type CustomText = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underlined?: boolean;
+  h3?: boolean;
+};
 
 declare module "slate" {
   interface CustomTypes {
