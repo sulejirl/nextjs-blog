@@ -1,4 +1,4 @@
-import { Editor, Transforms, Text, Node } from "slate";
+import { Editor, Transforms, Text, Node, Element } from "slate";
 import imageExtensions from "image-extensions";
 import isUrl from "is-url";
 import escapeHtml from "escape-html";
@@ -13,6 +13,13 @@ type ImageElement = {
   url: string;
   children: EmptyText[];
 };
+
+type DividerElement = {
+  type: "divider";
+  children: EmptyText[];
+};
+
+const LIST_TYPES = ["numbered-list", "bulleted-list", "divider"];
 export const EditorCommands = {
   isBoldMarkActive(editor) {
     const [match]: any = Editor.nodes(editor, {
@@ -35,6 +42,20 @@ export const EditorCommands = {
       match: (n) => n[format] === true,
       mode: "all",
     });
+    return !!match;
+  },
+  isBlockActive(editor, format) {
+    const { selection } = editor;
+    if (!selection) return false;
+
+    const [match] = Array.from(
+      Editor.nodes(editor, {
+        at: Editor.unhangRange(editor, selection),
+        match: (n) =>
+          !Editor.isEditor(n) && Element.isElement(n) && n.type === format,
+      })
+    );
+
     return !!match;
   },
 
@@ -66,11 +87,44 @@ export const EditorCommands = {
       { match: Text.isText, split: true }
     );
   },
+  toggleBlockFormat(editor, format) {
+    const isActive = EditorCommands.isBlockActive(editor, format);
+    const isList = LIST_TYPES.includes(format);
+    const text = { text: "" };
+    Transforms.unwrapNodes(editor, {
+      match: (n) =>
+        !Editor.isEditor(n) &&
+        Element.isElement(n) &&
+        LIST_TYPES.includes(n.type),
+      split: true,
+    });
+    const newProperties: Partial<Element> = {
+      type: isActive ? "paragraph" : isList ? "list-item" : format,
+      children: [text],
+    };
+
+    Transforms.setNodes<Element>(editor, newProperties);
+
+    if (!isActive && isList) {
+      const block = { type: format, children: [text] };
+      Transforms.wrapNodes(editor, block);
+    }
+  },
   insertImage(editor, url) {
     const text = { text: "" };
     const image: ImageElement = { type: "image", url, children: [text] };
+    const emptyLine: any = { type: "paragraph", children: [text] };
     Transforms.insertNodes(editor, image as any);
+    Transforms.insertNodes(editor, emptyLine as any);
   },
+  insertDivider(editor) {
+    const text = { text: "" };
+    const Divider: DividerElement = { type: "divider", children: [text] };
+    const emptyLine: any = { type: "paragraph", children: [text] };
+    Transforms.insertNodes(editor, Divider as any);
+    Transforms.insertNodes(editor, emptyLine as any);
+  },
+
   serialize(value) {
     return (
       value
@@ -82,6 +136,7 @@ export const EditorCommands = {
   },
 
   htmlSerialize(node: any) {
+    // console.log("Serialize", node);
     if (Text.isText(node)) {
       let string = escapeHtml(node.text);
       if (node.bold) {
@@ -102,12 +157,24 @@ export const EditorCommands = {
     switch (node.type) {
       case "quote":
         return `<blockquote><p>${children}</p></blockquote>`;
+      case "h1":
+        return `<h1>${children}</h1>`;
+      case "h3":
+        return `<h3>${children}</h3>`;
       case "paragraph":
         return `<p>${children}</p>`;
+      case "divider":
+        return `<hr>${children}</hr>`;
+      case "list-item":
+        return `<li>${children}</li>`;
+      case "numbered-list":
+        return `<ol>${children}</ol>`;
       case "image":
         return `<img src="${escapeHtml(node.url)}" height=${
           node.height || 200
-        } width=${node.width || 200} alignment=${node.alignment}>${children}</img>`;
+        } width=${node.width || 200} alignment=${
+          node.alignment
+        }>${children}</img>`;
       case "link":
         return `<a href="${escapeHtml(node.url)}">${children}</a>`;
       default:
@@ -129,7 +196,8 @@ export const EditorCommands = {
     if (children.length === 0) {
       children = [{ text: "" }];
     }
-    console.log(el.nodeName);
+    // console.log("Deserialize", el.nodeName);
+
     switch (el.nodeName) {
       case "BODY":
         return jsx("fragment", {}, children);
@@ -137,6 +205,16 @@ export const EditorCommands = {
         return "\n";
       case "BLOCKQUOTE":
         return jsx("element", { type: "quote" }, children);
+      case "H1":
+        return jsx("element", { type: "h1" }, children);
+      case "H3":
+        return jsx("element", { type: "h3" }, children);
+      case "HR":
+        return jsx("element", { type: "divider" }, children);
+      case "LI":
+        return jsx("element", { type: "list-item" }, children);
+      case "OL":
+        return jsx("element", { type: "numbered-list" }, children);
       case "P":
         return jsx("element", { type: "paragraph" }, children);
       case "STRONG":

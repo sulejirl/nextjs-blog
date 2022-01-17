@@ -8,17 +8,29 @@ import {
   FormatBold,
   FormatItalic,
   FormatUnderlined,
+  FormatListBulleted,
+  FormatListNumbered,
+  Title,
 } from "@mui/icons-material";
 
+const LIST_BLOCK_FORMAT = ["h1", "h3","bulleted-list", "numbered-list"];
 const FormatButton = ({ format, children }) => {
   const editor = useSlate();
   return (
     <Button
       reversed
-      active={EditorCommands.isFormatActive(editor, format)}
+      active={
+        LIST_BLOCK_FORMAT.includes(format)
+          ? EditorCommands.isBlockActive(editor, format)
+          : EditorCommands.isFormatActive(editor, format)
+      }
       onMouseDown={(event) => {
         event.preventDefault();
-        EditorCommands.toggleFormat(editor, format);
+        if (LIST_BLOCK_FORMAT.includes(format)) {
+          EditorCommands.toggleBlockFormat(editor, format);
+        } else {
+          EditorCommands.toggleFormat(editor, format);
+        }
       }}
     >
       {children}
@@ -33,7 +45,6 @@ export const HoveringToolbar = () => {
   useEffect(() => {
     const el = ref.current;
     const { selection } = editor;
-
     if (!el) {
       return;
     }
@@ -81,6 +92,18 @@ export const HoveringToolbar = () => {
       </FormatButton>
       <FormatButton format="underlined">
         <FormatUnderlined />
+      </FormatButton>
+      <FormatButton format="h1">
+        <Title />
+      </FormatButton>
+      <FormatButton format="h3">
+        <Title style={{ fontSize: "20px" }} />
+      </FormatButton>
+      <FormatButton format="bulleted-list">
+        <FormatListBulleted />
+      </FormatButton>
+      <FormatButton format="numbered-list">
+        <FormatListNumbered />
       </FormatButton>
     </Menu>
   );

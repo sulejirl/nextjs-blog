@@ -25,6 +25,8 @@ type CustomText = {
   italic?: boolean;
   underlined?: boolean;
   h3?: boolean;
+  "list-item"?: boolean;
+  "numbered-list"?: boolean;
 };
 
 declare module "slate" {
@@ -109,11 +111,26 @@ const TextEditor = () => {
         return <Image {...props} />;
       case "h1":
         return <h1 {...props} />;
+      case "h3":
+        return <h3 {...props} />;
+      case "divider":
+        return (
+          <div
+            {...props}
+            contentEditable={false}
+            style={{ userSelect: "none", margin: "20px" }}
+          >
+            <hr style={{ userSelect: "none", margin: "20px" }} />
+          </div>
+        );
+      case "list-item":
+        return <li {...props.attributes}>{props.children}</li>;
+      case "numbered-list":
+        return <ol {...props.attributes}>{props.children}</ol>;
       default:
         return <p {...props.attributes}>{props.children}</p>;
     }
   }, []);
-  console.log(value);
   return (
     <div ref={ref}>
       <Slate
@@ -127,12 +144,10 @@ const TextEditor = () => {
           );
           if (isAstChange) {
             // Save the value to Local Storage.
-            console.log(value);
             const document = new DOMParser().parseFromString(
               EditorCommands.htmlSerialize({ children: value }),
               "text/html"
             );
-            console.log(EditorCommands.htmlDeserialize(document.body));
             // localStorage.setItem("content", EditorCommands.serialize(value));
             localStorage.setItem(
               "content",
@@ -163,16 +178,18 @@ const TextEditor = () => {
             }
           }}
           onDOMBeforeInput={(event: InputEvent) => {
-            switch (event.inputType) {
-              case "formatBold":
-                return EditorCommands.toggleFormat(editor, "bold");
-              case "formatItalic":
-                return EditorCommands.toggleFormat(editor, "italic");
-              case "formatUnderline":
-                return EditorCommands.toggleFormat(editor, "underlined");
-              case "formatH3":
-                return EditorCommands.toggleFormat(editor, "h3");
-            }
+            // switch (event.inputType) {
+            //   case "formatBold":
+            //     return EditorCommands.toggleFormat(editor, "bold");
+            //   case "formatItalic":
+            //     return EditorCommands.toggleFormat(editor, "italic");
+            //   case "formatUnderline":
+            //     return EditorCommands.toggleFormat(editor, "underlined");
+            //   case "formatH1":
+            //     return EditorCommands.toggleBlockFormat(editor, "h1");
+            //   case "formatH3":
+            //     return EditorCommands.toggleBlockFormat(editor, "h3");
+            // }
           }}
           onClick={(event) => {
             setCursorActive(true);
