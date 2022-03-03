@@ -7,7 +7,7 @@ import Firebase from "../components/FirebaseAuth";
 import Modal from "../components/Modal";
 import ProfileMenu from "../components/ProfileMenu";
 import { Backdrop,CircularProgress } from "@mui/material";
-
+import Script from 'next/script'
 import { useAuth } from "../contexts/firebaseContext";
 
 import { gql, useQuery } from "@apollo/client";
@@ -52,7 +52,7 @@ export default function Home() {
           {data.getPosts.map(({ _id, createdAt, title }) => (
             <li className={utilStyles.listItem} key={_id}>
               <Link href={`/posts/${_id}`}>
-                <a>{title}</a>
+                <a>{title || 'Title'}</a>
               </Link>
               <br />
               <small className={utilStyles.lightText}>

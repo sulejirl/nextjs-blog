@@ -22,6 +22,8 @@
     "@mui/icons-material": "^5.2.5",
     "@mui/material": "^5.2.5",
     "apollo-server-micro": "^3.5.0",
+    "cloudinary": "^1.28.1",
+    "cloudinary-react": "^1.7.0",
     "date-fns": "^2.27.0",
     "deepmerge": "^4.2.2",
     "draft-js": "^0.11.7",

@@ -19,7 +19,7 @@ type DividerElement = {
   children: EmptyText[];
 };
 
-const LIST_TYPES = ["numbered-list", "bulleted-list", "divider"];
+const LIST_TYPES = ["numbered-list", "bulleted-list", "divider","block-quote"];
 export const EditorCommands = {
   isBoldMarkActive(editor) {
     const [match]: any = Editor.nodes(editor, {

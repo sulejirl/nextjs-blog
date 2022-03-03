@@ -6,6 +6,8 @@ const typeDefs = gql`
     _id: ID
     title: String
     body: String
+    draft: Boolean
+    userId:String
     createdAt: String
     updatedAt: String
   }
@@ -13,6 +15,8 @@ const typeDefs = gql`
   input PostInput {
     title: String
     body: String
+    draft: Boolean
+    userId: String
   }
 
   type Query {

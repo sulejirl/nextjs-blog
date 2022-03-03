@@ -7,10 +7,19 @@ mongoose.Promise = global.Promise
 const PostSchema = new Schema({
   title: {
     type: String,
-    required: true,
     trim: true,
   },
   body: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  draft: {
+    type: Boolean,
+    required: true,
+    trim: true,
+  },
+  userId: {
     type: String,
     required: true,
     trim: true,

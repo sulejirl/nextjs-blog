@@ -40,6 +40,7 @@ export default function Layout({ children, home }) {
         >
           Scoutsland
         </Typography>
+        <>
         {user ? (
           <ProfileMenu displayName={displayName} photoURL={photoURL} />
         ) : (
@@ -47,6 +48,7 @@ export default function Layout({ children, home }) {
             <Firebase />
           </Modal>
         )}
+        </>
       </header>
       <Divider />
       <main>{children}</main>

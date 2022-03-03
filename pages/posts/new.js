@@ -2,8 +2,29 @@ import Head from "next/head";
 import Layout, { siteTitle } from "../../components/layout";
 import TextEditor from "../../components/TextEditor/text-editor";
 import { Backdrop, CircularProgress } from "@mui/material";
+import { useAuth } from "../../contexts/firebaseContext";
+import { gql ,useMutation} from "@apollo/client";
+
+const CREATE_POST = gql`
+mutation newPost($input: PostInput) {
+  newPost(input: $input) {
+    title
+    body
+    _id
+    draft
+    userId
+  }
+}`
 
 export default function NewPost() {
+  const [createPost, { data, loading, error }] = useMutation(CREATE_POST);
+  const { user } = useAuth();
+  const handleOnSave = (post) => {
+    const userId = user?.multiFactor?.user?.uid || "";
+    post.userId = userId;
+    createPost({ variables: { input: post} });
+  }
+
   if (false) {
     return (
       <Backdrop
@@ -21,7 +42,7 @@ export default function NewPost() {
         <title>{siteTitle}</title>
       </Head>
       <section>
-        <TextEditor />
+        <TextEditor onSave={handleOnSave}/>
       </section>
     </Layout>
   );

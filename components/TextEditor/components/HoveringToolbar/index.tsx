@@ -10,10 +10,11 @@ import {
   FormatUnderlined,
   FormatListBulleted,
   FormatListNumbered,
+  FormatQuote,
   Title,
 } from "@mui/icons-material";
 
-const LIST_BLOCK_FORMAT = ["h1", "h3","bulleted-list", "numbered-list"];
+const LIST_BLOCK_FORMAT = ["h1", "h3","bulleted-list", "numbered-list","block-quote"];
 const FormatButton = ({ format, children }) => {
   const editor = useSlate();
   return (
@@ -104,6 +105,9 @@ export const HoveringToolbar = () => {
       </FormatButton>
       <FormatButton format="numbered-list">
         <FormatListNumbered />
+      </FormatButton>
+      <FormatButton format="block-quote">
+        <FormatQuote />
       </FormatButton>
     </Menu>
   );

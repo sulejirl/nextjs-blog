@@ -16,7 +16,7 @@ import { createEditor, BaseEditor, Descendant, Node } from "slate";
 import { withHistory } from "slate-history";
 import { EditorCommands } from "./helper";
 import useOnClickOutside from "../../hooks/useOnClickOutside";
-import { HoveringToolbar, SideToolbar, Leaf, Image } from "./components";
+import { HoveringToolbar, SideToolbar, Leaf, Image, PublishMenu } from "./components";
 
 type CustomElement = { type: "paragraph"; children: CustomText[] };
 type CustomText = {
@@ -72,7 +72,7 @@ const withImages = (editor) => {
   return editor;
 };
 
-const TextEditor = () => {
+const TextEditor = ({onSave}) => {
   const ref = useRef();
   const focused = useFocused();
   const initialValue: CustomElement[] = [
@@ -113,6 +113,8 @@ const TextEditor = () => {
         return <h1 {...props} />;
       case "h3":
         return <h3 {...props} />;
+      case "block-quote":
+        return <blockquote {...props.attributes}>{props.children}</blockquote>;
       case "divider":
         return (
           <div
@@ -131,8 +133,18 @@ const TextEditor = () => {
         return <p {...props.attributes}>{props.children}</p>;
     }
   }, []);
+
+  const handleOnSavePost = (draft) => {
+    const post = {
+      title: '',
+      body:EditorCommands.htmlSerialize({ children: value }),
+      draft: draft ? true : false,
+    }
+    onSave(post)
+  }
   return (
     <div ref={ref}>
+      <PublishMenu onSave={handleOnSavePost}/>
       <Slate
         editor={editor}
         value={value || []}
@@ -164,6 +176,16 @@ const TextEditor = () => {
           renderElement={renderElement}
           placeholder="Enter some text..."
           onKeyDown={(event) => {
+            if (event.key === "Backspace") {
+              const { children } = editor;
+              if (
+                children.length > 0 &&
+                (children[0].type === "numbered-list" ||
+                  children[0].type === "bulleted-list")
+              ) {
+                if (children[0].children.len) console.log(children[0].children);
+              }
+            }
             if (!event.ctrlKey) {
               return;
             }
