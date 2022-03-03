@@ -4,7 +4,7 @@ import { ImageOutlined } from "@mui/icons-material";
 import { widgetOptions } from "../../../../../util/cloudinary";
 
 export default function BasicPopover({ sx, editor, insertImage }: any) {
-  let widget = window.cloudinary.createUploadWidget(
+  let widget = (window as any).cloudinary.createUploadWidget(
     widgetOptions,
     (err, result) => {
       if (!err) {
