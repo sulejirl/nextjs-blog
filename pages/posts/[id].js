@@ -4,6 +4,7 @@ import Head from "next/head";
 import utilStyles from "../../styles/utils.module.css";
 import { gql, useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+import TextEditor from "../../components/TextEditor/text-editor";
 import { Backdrop, CircularProgress } from "@mui/material";
 
 const GetPost = gql`
@@ -31,7 +32,7 @@ export default function Post() {
       </Backdrop>
     );
   }
-
+  console.log(data)
   if (error) return <p>Error...</p>;
   return (
     <Layout>
@@ -43,7 +44,7 @@ export default function Post() {
         <div className={utilStyles.lightText}>
           <Date dateString={data.getPost.createdAt} />
         </div>
-        <div dangerouslySetInnerHTML={{ __html: data.getPost.body }} />
+        <TextEditor data={data.getPost.body} readOnly/>
       </article>
     </Layout>
   );

@@ -12,11 +12,17 @@ import {
   withReact,
   useFocused,
 } from "slate-react";
-import { createEditor, BaseEditor, Descendant, Node } from "slate";
+import { createEditor, BaseEditor, Descendant, Node, Transforms } from "slate";
 import { withHistory } from "slate-history";
 import { EditorCommands } from "./helper";
 import useOnClickOutside from "../../hooks/useOnClickOutside";
-import { HoveringToolbar, SideToolbar, Leaf, Image, PublishMenu } from "./components";
+import {
+  HoveringToolbar,
+  SideToolbar,
+  Leaf,
+  Image,
+  PublishMenu,
+} from "./components";
 
 type CustomElement = { type: "paragraph"; children: CustomText[] };
 type CustomText = {
@@ -72,7 +78,7 @@ const withImages = (editor) => {
   return editor;
 };
 
-const TextEditor = ({onSave}) => {
+const TextEditor = ({ onSave, data, readOnly }) => {
   const ref = useRef();
   const focused = useFocused();
   const initialValue: CustomElement[] = [
@@ -87,12 +93,13 @@ const TextEditor = ({onSave}) => {
     () => withImages(withHistory(withReact(createEditor()))),
     []
   );
+  const [cursorActive, setCursorActive] = useState(false);
+  useOnClickOutside(ref, () => setCursorActive(false));
+
   useEffect(() => {
-    if (window.localStorage.getItem("content")) {
-      const document = new DOMParser().parseFromString(
-        window.localStorage.getItem("content"),
-        "text/html"
-      );
+    console.log(readOnly);
+    if (data) {
+      const document = new DOMParser().parseFromString(data, "text/html");
       if (document.body) {
         const editorValue = EditorCommands.htmlDeserialize(document.body);
         if (editorValue) {
@@ -101,14 +108,12 @@ const TextEditor = ({onSave}) => {
         }
       }
     }
-  }, []);
-  const [cursorActive, setCursorActive] = useState(false);
-  useOnClickOutside(ref, () => setCursorActive(false));
+  }, [data]);
 
   const renderElement = useCallback((props) => {
     switch (props.element.type) {
       case "image":
-        return <Image {...props} />;
+        return <Image {...props} readOnly={readOnly} />;
       case "h1":
         return <h1 {...props} />;
       case "h3":
@@ -136,54 +141,84 @@ const TextEditor = ({onSave}) => {
 
   const handleOnSavePost = (draft) => {
     const post = {
-      title: '',
-      body:EditorCommands.htmlSerialize({ children: value }),
+      title: "",
+      body: EditorCommands.htmlSerialize({ children: value }),
       draft: draft ? true : false,
-    }
-    onSave(post)
-  }
+    };
+    onSave(post);
+  };
   return (
     <div ref={ref}>
-      <PublishMenu onSave={handleOnSavePost}/>
+      {!readOnly && <PublishMenu onSave={handleOnSavePost} />}
       <Slate
         editor={editor}
         value={value || []}
         onChange={(value) => {
           setValue(value);
-
-          const isAstChange = editor.operations.some(
-            (op) => "set_selection" !== op.type
-          );
-          if (isAstChange) {
-            // Save the value to Local Storage.
-            const document = new DOMParser().parseFromString(
-              EditorCommands.htmlSerialize({ children: value }),
-              "text/html"
-            );
-            // localStorage.setItem("content", EditorCommands.serialize(value));
-            localStorage.setItem(
-              "content",
-              EditorCommands.htmlSerialize({ children: value })
-            );
-          }
         }}
       >
-        <HoveringToolbar />
-        <SideToolbar onClickToolbar={() => setCursorActive(false)} />
+        {!readOnly && <HoveringToolbar />}
+        {!readOnly && (
+          <SideToolbar onClickToolbar={() => setCursorActive(false)} />
+        )}
         <Editable
+          readOnly={readOnly}
           style={{ minHeight: "100vh" }}
           renderLeaf={(props) => <Leaf {...props} />}
           renderElement={renderElement}
           placeholder="Enter some text..."
           onKeyDown={(event) => {
+            const { children, selection } = editor;
+            const absPath = selection.anchor.path;
+            const parentNodeType = children[absPath[0]].type;
+            let value = null;
+            let type = null;
+            for (let i of absPath) {
+              value = value ? value.children[i] : children[i];
+              type = value.type ? value.type : type;
+            }
+            console.log(children);
+            if (event.key === "Enter") {
+              if (type === "list-item" && value.text === "") {
+                event.preventDefault();
+                Transforms.delete(editor, { at: [absPath[0],absPath[1]] });
+                Transforms.insertNodes(
+                  editor,
+                  {
+                    type: "paragraph",
+                    children: [{ text: "" }],
+                  },
+                  { at: [absPath[0]+1] }
+                );
+                Transforms.select(editor, {
+                  path: [absPath[0]+1],
+                  offset: 0,
+                });
+              }
+            }
             if (event.key === "Backspace") {
+              console.log(value, type, absPath, parentNodeType);
               const { children } = editor;
               if (
-                children.length > 0 &&
-                (children[0].type === "numbered-list" ||
-                  children[0].type === "bulleted-list")
+                value.text === "" &&
+                (parentNodeType === "numbered-list" ||
+                  parentNodeType === "bulleted-list") &&
+                absPath[1] === 0
               ) {
-                if (children[0].children.len) console.log(children[0].children);
+                event.preventDefault();
+                Transforms.delete(editor, { at: [absPath[0]] });
+                Transforms.insertNodes(
+                  editor,
+                  {
+                    type: "paragraph",
+                    children: [{ text: "" }],
+                  },
+                  { at: [absPath[0]] }
+                );
+                Transforms.select(editor, {
+                  path: [absPath[0]],
+                  offset: 0,
+                });
               }
             }
             if (!event.ctrlKey) {
