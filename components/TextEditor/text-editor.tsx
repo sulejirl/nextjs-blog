@@ -179,28 +179,21 @@ const TextEditor = ({ onSave, data, readOnly }) => {
             }
             console.log(children);
             if (event.key === " ") {
-              console.log(value.text, type,absPath);
               if (value.text === "-") {
                 event.preventDefault();
                 Transforms.delete(editor, { at: [absPath[0]] });
-                Transforms.insertNodes(
-                  editor,
-                  {
-                    type: "bulleted-list",
-                    children: [{ type: "list-item", children: [{text:""}] }],
-                  } as any,
-                );
+                Transforms.insertNodes(editor, {
+                  type: "bulleted-list",
+                  children: [{ type: "list-item", children: [{ text: "" }] }],
+                } as any);
               }
               if (value.text === "1.") {
                 event.preventDefault();
                 Transforms.delete(editor, { at: [absPath[0]] });
-                Transforms.insertNodes(
-                  editor,
-                  {
-                    type: "numbered-list",
-                    children: [{ type: "list-item", children: [{text:""}] }],
-                  } as any,
-                );
+                Transforms.insertNodes(editor, {
+                  type: "numbered-list",
+                  children: [{ type: "list-item", children: [{ text: "" }] }],
+                } as any);
               }
             }
             if (event.key === "Enter") {
@@ -210,7 +203,11 @@ const TextEditor = ({ onSave, data, readOnly }) => {
                     ? absPath[0]
                     : absPath[0] + 1;
                 event.preventDefault();
-                Transforms.delete(editor, { at: [absPath[0]] });
+                if (absPath[1] === 0) {
+                  Transforms.delete(editor, { at: [absPath[0]] });
+                } else {
+                  Transforms.delete(editor, { at: [absPath[0], absPath[1]] });
+                }
                 Transforms.insertNodes(
                   editor,
                   {
