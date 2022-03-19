@@ -178,20 +178,49 @@ const TextEditor = ({ onSave, data, readOnly }) => {
               type = value.type ? value.type : type;
             }
             console.log(children);
+            if (event.key === " ") {
+              console.log(value.text, type,absPath);
+              if (value.text === "-") {
+                event.preventDefault();
+                Transforms.delete(editor, { at: [absPath[0]] });
+                Transforms.insertNodes(
+                  editor,
+                  {
+                    type: "bulleted-list",
+                    children: [{ type: "list-item", children: [{text:""}] }],
+                  },
+                );
+              }
+              if (value.text === "1.") {
+                event.preventDefault();
+                Transforms.delete(editor, { at: [absPath[0]] });
+                Transforms.insertNodes(
+                  editor,
+                  {
+                    type: "numbered-list",
+                    children: [{ type: "list-item", children: [{text:""}] }],
+                  },
+                );
+              }
+            }
             if (event.key === "Enter") {
               if (type === "list-item" && value.text === "") {
+                const insertLocation =
+                  absPath[0] === 0 && absPath[1] === 0
+                    ? absPath[0]
+                    : absPath[0] + 1;
                 event.preventDefault();
-                Transforms.delete(editor, { at: [absPath[0],absPath[1]] });
+                Transforms.delete(editor, { at: [absPath[0]] });
                 Transforms.insertNodes(
                   editor,
                   {
                     type: "paragraph",
                     children: [{ text: "" }],
                   },
-                  { at: [absPath[0]+1] }
+                  { at: [insertLocation] }
                 );
                 Transforms.select(editor, {
-                  path: [absPath[0]+1],
+                  path: [insertLocation],
                   offset: 0,
                 });
               }
