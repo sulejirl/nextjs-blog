@@ -188,7 +188,7 @@ const TextEditor = ({ onSave, data, readOnly }) => {
                   {
                     type: "bulleted-list",
                     children: [{ type: "list-item", children: [{text:""}] }],
-                  },
+                  } as any,
                 );
               }
               if (value.text === "1.") {
@@ -199,7 +199,7 @@ const TextEditor = ({ onSave, data, readOnly }) => {
                   {
                     type: "numbered-list",
                     children: [{ type: "list-item", children: [{text:""}] }],
-                  },
+                  } as any,
                 );
               }
             }
