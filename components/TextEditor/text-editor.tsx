@@ -125,9 +125,9 @@ const TextEditor = ({ onSave, data, readOnly }) => {
           <div
             {...props}
             contentEditable={false}
-            style={{ userSelect: "none", margin: "20px" }}
+            style={{ userSelect: "none", padding: "10px" }}
           >
-            <hr style={{ userSelect: "none", margin: "20px" }} />
+            <hr style={{ userSelect: "none", margin: "10px" }} />
           </div>
         );
       case "list-item":

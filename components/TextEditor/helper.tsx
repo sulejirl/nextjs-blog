@@ -1,4 +1,7 @@
 import { Editor, Transforms, Text, Node, Element } from "slate";
+import {
+  ReactEditor,
+} from "slate-react";
 import imageExtensions from "image-extensions";
 import isUrl from "is-url";
 import escapeHtml from "escape-html";
@@ -19,7 +22,7 @@ type DividerElement = {
   children: EmptyText[];
 };
 
-const LIST_TYPES = ["numbered-list", "bulleted-list", "divider","block-quote"];
+const LIST_TYPES = ["numbered-list", "bulleted-list", "divider", "block-quote"];
 export const EditorCommands = {
   isBoldMarkActive(editor) {
     const [match]: any = Editor.nodes(editor, {
@@ -118,11 +121,19 @@ export const EditorCommands = {
     Transforms.insertNodes(editor, emptyLine as any);
   },
   insertDivider(editor) {
+    const { selection } = editor;
+    const absPath = selection.anchor.path;
     const text = { text: "" };
     const Divider: DividerElement = { type: "divider", children: [text] };
     const emptyLine: any = { type: "paragraph", children: [text] };
-    Transforms.insertNodes(editor, Divider as any);
-    Transforms.insertNodes(editor, emptyLine as any);
+    Transforms.delete(editor, { at: [absPath[0]] });
+    Transforms.insertNodes(editor, Divider as any ,{ at: [absPath[0]] });
+    Transforms.insertNodes(editor, emptyLine as any,{ at: [absPath[0] + 1] });
+    ReactEditor.focus(editor);
+    Transforms.select(editor, {
+      path: [absPath[0] + 1],
+      offset: 0,
+    });
   },
 
   serialize(value) {
