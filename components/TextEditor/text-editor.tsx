@@ -141,9 +141,9 @@ const TextEditor = ({ onSave, data, readOnly }) => {
     }
   }, []);
 
-  const handleOnSavePost = (draft) => {
+  const handleOnSavePost = (title, draft) => {
     const post = {
-      title: "",
+      title: title || "",
       body: EditorCommands.htmlSerialize({ children: value }),
       draft: draft ? true : false,
     };
