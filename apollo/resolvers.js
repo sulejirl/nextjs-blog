@@ -22,6 +22,15 @@ const resolvers = {
 
       return post
     },
+    getPostByUserId: async (_, { userId }) => {
+      try {
+        const posts = await Post.find({userId})
+
+        return posts
+      } catch (err) {
+        console.log(err)
+      }
+    },
   },
 
   Mutation: {
