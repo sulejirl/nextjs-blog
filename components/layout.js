@@ -18,6 +18,8 @@ export default function Layout({ children, home }) {
   const router = useRouter();
   const displayName = user?.multiFactor?.user?.displayName || "";
   const photoURL = user?.multiFactor?.user?.photoURL || "";
+  const uid = user?.multiFactor?.user?.uid || "";
+
   return (
     <div className={styles.container}>
       <Head>
@@ -42,7 +44,7 @@ export default function Layout({ children, home }) {
         </Typography>
         <>
         {user ? (
-          <ProfileMenu displayName={displayName} photoURL={photoURL} />
+          <ProfileMenu displayName={displayName} photoURL={photoURL} uid={uid} />
         ) : (
           <Modal buttonText="Sign In">
             <Firebase />

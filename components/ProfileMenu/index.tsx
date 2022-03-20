@@ -7,9 +7,10 @@ import { useRouter } from 'next/router'
 interface IProfileMenu {
   displayName: string;
   photoURL: string;
+  uid:string;
 }
 
-export default function BasicMenu({ displayName, photoURL }: IProfileMenu) {
+export default function BasicMenu({ displayName, photoURL,uid }: IProfileMenu) {
   const router = useRouter()
   const {signOut} = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -36,8 +37,8 @@ export default function BasicMenu({ displayName, photoURL }: IProfileMenu) {
           "aria-labelledby": "basic-button",
         }}
       >
-        <MenuItem onClick={()=>{router.push('posts/new')}}>New Report</MenuItem>
-        <MenuItem onClick={()=>{}}>Profile</MenuItem>
+        <MenuItem onClick={()=>{router.push('/posts/new')}}>New Report</MenuItem>
+        <MenuItem onClick={()=>{router.push(`/${uid}`)}}>Profile</MenuItem>
         <MenuItem onClick={handleClose}>My account</MenuItem>
         <MenuItem onClick={signOut}>Logout</MenuItem>
       </Menu>
