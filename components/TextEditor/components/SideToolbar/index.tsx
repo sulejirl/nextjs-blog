@@ -10,7 +10,7 @@ import { EditorCommands } from "../../helper";
 
 import useWindowSize from "../../../../hooks/useWindowSize";
 
-export const SideToolbar = ({ onClickToolbar }: any) => {
+export const SideToolbar = ({ onClickToolbar,onToolbarToogle }: any) => {
   const ref = useRef<HTMLDivElement | null>();
   const editor = useSlate();
   const focused = useFocused();
@@ -25,6 +25,7 @@ export const SideToolbar = ({ onClickToolbar }: any) => {
   const toggleSideToolbar = () => {
     onClickToolbar();
     setSideToolbar(!sideToolbar);
+    onToolbarToogle(!sideToolbar);
   };
   useEffect(() => {
     const { selection, children } = editor;
@@ -55,6 +56,7 @@ export const SideToolbar = ({ onClickToolbar }: any) => {
     }
     if (sideToolbar && ReactEditor.isFocused(editor as ReactEditor)) {
       setSideToolbar(false);
+      onToolbarToogle(false);
     }
   });
   if (showSideToolbar) {

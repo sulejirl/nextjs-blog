@@ -94,6 +94,8 @@ const TextEditor = ({ onSave, data, readOnly }) => {
     []
   );
   const [cursorActive, setCursorActive] = useState(false);
+  const [toolbarToogle, setToolbarToogle] = useState(false);
+
   useOnClickOutside(ref, () => setCursorActive(false));
 
   useEffect(() => {
@@ -147,6 +149,7 @@ const TextEditor = ({ onSave, data, readOnly }) => {
     };
     onSave(post);
   };
+
   return (
     <div ref={ref}>
       {!readOnly && <PublishMenu onSave={handleOnSavePost} />}
@@ -159,14 +162,14 @@ const TextEditor = ({ onSave, data, readOnly }) => {
       >
         {!readOnly && <HoveringToolbar />}
         {!readOnly && (
-          <SideToolbar onClickToolbar={() => setCursorActive(false)} />
+          <SideToolbar onClickToolbar={() => setCursorActive(false)} onToolbarToogle={(open)=>setToolbarToogle(open)} />
         )}
         <Editable
           readOnly={readOnly}
           style={{ minHeight: "100vh" }}
           renderLeaf={(props) => <Leaf {...props} />}
           renderElement={renderElement}
-          placeholder="Enter some text..."
+          placeholder={!toolbarToogle && "Enter some text..."}
           onKeyDown={(event) => {
             const { children, selection } = editor;
             const absPath = selection.anchor.path;
@@ -177,7 +180,6 @@ const TextEditor = ({ onSave, data, readOnly }) => {
               value = value ? value.children[i] : children[i];
               type = value.type ? value.type : type;
             }
-            console.log(children);
             if (event.key === " ") {
               if (value.text === "-") {
                 event.preventDefault();
@@ -223,7 +225,6 @@ const TextEditor = ({ onSave, data, readOnly }) => {
               }
             }
             if (event.key === "Backspace") {
-              console.log(value, type, absPath, parentNodeType);
               const { children } = editor;
               if (
                 value.text === "" &&
