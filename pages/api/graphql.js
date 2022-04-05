@@ -10,9 +10,14 @@ export const config = {
   },
 }
 console.log('API',typeDefs,resolvers)
-const apolloServer = new ApolloServer({ typeDefs, resolvers })
+let startServer = null;
+let apolloServer = null;
+if(Object.keys(resolvers).length > 0){
 
-const startServer = apolloServer.start()
+  apolloServer = new ApolloServer({ typeDefs, resolvers })
+  startServer = apolloServer.start()
+}
+
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -28,9 +33,10 @@ export default async function handler(req, res) {
       res.end()
       return false
     }
-  
-    await startServer
-    await apolloServer.createHandler({
-      path: '/api/graphql',
-    })(req, res)
-  }
+    if(startServer) {
+      await startServer
+      await apolloServer.createHandler({
+        path: '/api/graphql',
+      })(req, res)
+    }
+}

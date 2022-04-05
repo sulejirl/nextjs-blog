@@ -26,7 +26,7 @@ const GetPosts = gql`
 export default function Home() {
   const { data, loading, error } = useQuery(GetPosts);
   const { user } = useAuth();
-  if (loading) {
+  if (loading && !data) {
     return (
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
