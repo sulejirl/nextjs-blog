@@ -141,7 +141,7 @@ const TextEditor = ({ onSave, data, readOnly }) => {
   }, []);
 
   const handleOnSavePost = (title, draft) => {
-    const image:any = value.find((item) => item.type === "image");
+    const image:any = value.find((item:any) => item.type === "image");
     const imageUrl = image.url || "";
     const post = {
       title: title || "",
