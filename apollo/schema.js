@@ -11,7 +11,6 @@ const resolverArray = loadFilesSync(join(process.cwd(), 'apollo/graph/**/*.resol
 
 typeDefs = mergeTypeDefs(typeDefsArray)
 resolvers = mergeResolvers(resolverArray)
-console.log(resolverArray)
 
 const schema = makeExecutableSchema({
   typeDefs,

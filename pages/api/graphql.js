@@ -9,7 +9,7 @@ export const config = {
     bodyParser: false,
   },
 }
-
+console.log('API',typeDefs,resolvers)
 const apolloServer = new ApolloServer({ typeDefs, resolvers })
 
 const startServer = apolloServer.start()
