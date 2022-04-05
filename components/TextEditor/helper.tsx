@@ -147,7 +147,6 @@ export const EditorCommands = {
   },
 
   htmlSerialize(node: any) {
-    // console.log("Serialize", node);
     if (Text.isText(node)) {
       let string = escapeHtml(node.text);
       if (node.bold) {
@@ -207,7 +206,6 @@ export const EditorCommands = {
     if (children.length === 0) {
       children = [{ text: "" }];
     }
-    // console.log("Deserialize", el.nodeName);
 
     switch (el.nodeName) {
       case "BODY":

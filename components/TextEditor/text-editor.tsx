@@ -99,7 +99,6 @@ const TextEditor = ({ onSave, data, readOnly }) => {
   useOnClickOutside(ref, () => setCursorActive(false));
 
   useEffect(() => {
-    console.log(readOnly);
     if (data) {
       const document = new DOMParser().parseFromString(data, "text/html");
       if (document.body) {
@@ -142,10 +141,13 @@ const TextEditor = ({ onSave, data, readOnly }) => {
   }, []);
 
   const handleOnSavePost = (title, draft) => {
+    const image:any = value.find((item) => item.type === "image");
+    const imageUrl = image.url || "";
     const post = {
       title: title || "",
       body: EditorCommands.htmlSerialize({ children: value }),
       draft: draft ? true : false,
+      thumbnail: imageUrl,
     };
     onSave(post);
   };

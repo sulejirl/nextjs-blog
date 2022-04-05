@@ -32,7 +32,6 @@ export default function Post() {
       </Backdrop>
     );
   }
-  console.log(data)
   if (error) return <p>Error...</p>;
   return (
     <Layout>

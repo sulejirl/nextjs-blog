@@ -1,36 +1,20 @@
-import { gql } from 'apollo-server-micro'
+import { join } from 'path'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { loadFilesSync } from '@graphql-tools/load-files'
+import { mergeTypeDefs,mergeResolvers } from '@graphql-tools/merge'
 
-const typeDefs = gql`
-  # Products
-  type Post {
-    _id: ID
-    title: String
-    body: String
-    draft: Boolean
-    userId:String
-    createdAt: String
-    updatedAt: String
-  }
+let typeDefs = [];
+let resolvers = [];
 
-  input PostInput {
-    title: String
-    body: String
-    draft: Boolean
-    userId: String
-  }
+const typeDefsArray = loadFilesSync(join(process.cwd(), 'apollo/graph/**/*.graphql'), { recursive: true })
+const resolverArray = loadFilesSync(join(process.cwd(), 'apollo/graph/**/*.resolvers.*'), { recursive: true })
 
-  type Query {
-    getPosts: [Post]
-    getPost(id: ID!): Post
-    getPostByUserId(userId: ID!): [Post]
-  }
+typeDefs = mergeTypeDefs(typeDefsArray)
+resolvers = mergeResolvers(resolverArray)
+console.log(resolverArray)
 
-  type Mutation {
-    #Posts
-    newPost(input: PostInput): Post
-    updatePost(id: ID!, input: PostInput): Post
-    deletePost(id: ID!): String
-  }
-`
-
-module.exports = typeDefs
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+})
+module.exports = {schema,typeDefs,resolvers} 

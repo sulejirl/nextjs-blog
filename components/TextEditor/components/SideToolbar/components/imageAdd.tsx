@@ -8,7 +8,6 @@ export default function BasicPopover({ sx, editor, insertImage }: any) {
     widgetOptions,
     (err, result) => {
       if (!err) {
-        console.log(result.event)
         if (result && result.event === "success") {
           insertImage(editor, result.info.secure_url);
         }
@@ -20,7 +19,6 @@ export default function BasicPopover({ sx, editor, insertImage }: any) {
   const handleAddImage = () => {
     widget.open();
   };
-  console.log(imagePath)
   return (
     <div>
       <IconButton sx={sx} onClick={handleAddImage}>

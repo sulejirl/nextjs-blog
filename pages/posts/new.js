@@ -10,6 +10,7 @@ mutation newPost($input: PostInput) {
   newPost(input: $input) {
     title
     body
+    thumbnail
     _id
     draft
     userId

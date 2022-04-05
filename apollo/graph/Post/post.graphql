@@ -1,0 +1,31 @@
+  type Post {
+    _id: ID
+    title: String
+    body: String
+    draft: Boolean
+    userId:String
+    thumbnail: String
+    createdAt: String
+    updatedAt: String
+  }
+
+  input PostInput {
+    title: String
+    body: String
+    draft: Boolean
+    userId: String
+    thumbnail: String
+  }
+
+  type Query {
+    getPosts: [Post]
+    getPost(id: ID!): Post
+    getPostByUserId(userId: ID!): [Post]
+  }
+
+  type Mutation {
+    #Posts
+    newPost(input: PostInput): Post
+    updatePost(id: ID!, input: PostInput): Post
+    deletePost(id: ID!): String
+  }

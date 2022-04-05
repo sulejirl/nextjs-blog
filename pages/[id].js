@@ -4,7 +4,7 @@ import Head from "next/head";
 import utilStyles from "../styles/utils.module.css";
 import { gql, useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-import TextEditor from "../components/TextEditor/text-editor";
+import PostCard from "../components/PostCard";
 import { Backdrop, CircularProgress } from "@mui/material";
 
 const GetPostByUserId = gql`
@@ -12,6 +12,7 @@ const GetPostByUserId = gql`
     getPostByUserId(userId: $userId) {
       title
       body
+      thumbnail
       createdAt
       updatedAt
     }
@@ -21,8 +22,8 @@ const GetPostByUserId = gql`
 export default function Profile() {
   const router = useRouter();
   const { id } = router.query;
-  console.log(id)
   const { data, loading, error } = useQuery(GetPostByUserId, { variables: { userId: id } });
+  const posts = data?.getPostByUserId || null;
   if (loading) {
     return (
       <Backdrop
@@ -34,13 +35,12 @@ export default function Profile() {
     );
   }
   if (error) return <p>Error...</p>;
-  console.log(data)
   return (
     <Layout>
       <Head>
         {/* <title>{data.getPost.title}</title> */}
       </Head>
-        <>asdasd</>
+        {posts.map((post) => (<PostCard key={post._id} post={post} />))}
     </Layout>
   );
 }

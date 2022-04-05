@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 
 const { Schema } = mongoose
 
@@ -24,9 +24,12 @@ const PostSchema = new Schema({
     required: true,
     trim: true,
   },
+  thumbnail: {
+    type: String,
+    trim: true,
+  },
 },{timestamps:true})
 
 PostSchema.index({ title: 'text' })
 
-module.exports =
-  mongoose.models.Post || mongoose.model('Post', PostSchema)
+module.exports = mongoose.models.Post || mongoose.model('Post', PostSchema)

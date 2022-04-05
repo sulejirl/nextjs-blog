@@ -1,4 +1,4 @@
-const Post = require('../db/models/posts')
+const Post = require('../../../db/models/posts.js')
 const ObjectId = require('mongodb').ObjectId
 
 const resolvers = {
